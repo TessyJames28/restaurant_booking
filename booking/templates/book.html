@@ -1,0 +1,161 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<section>
+  <article>
+    <!-- Add your code in the line below  -->
+    <h1> Book a Table</h1>
+    {% if messages %}
+      <ul>
+        {% for message in messages %}
+          <li style="color: green;">{{ message }}</li>
+        {% endfor %}
+      </ul>
+    {% endif %}
+    <!--Begin row-->
+    <div class="row">
+      <!--Begin col-->
+      <div class="column">
+        <!-- Add the booking form -->
+        <form action="" method="post">
+          {% csrf_token %}
+          <p>
+            {{ form.name.label_tag }}
+            {{ form.name }}
+            {% if form.name.errors %}
+              <div style="color: red;">{{ form.name.errors.0 }}</div>
+            {% endif %}
+          </p>
+          <p>
+            {{ form.reservation_date.label_tag }}
+            {{ form.reservation_date }}
+            {% if form.reservation_date.errors %}
+              <div style="color: red;">{{ form.reservation_date.errors.0 }}</div>
+            {% endif %}
+          </p>
+          <p>
+            {{ form.reservation_slot.label_tag }}
+            {{ form.reservation_slot }}
+            {% if form.reservation_slot.errors %}
+              <div style="color: red;">{{ form.reservation_slot.errors.0 }}</div>
+            {% endif %}
+          </p>
+          {% if form.non_field_errors %}
+            <div style="color: red;">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+          <input type="submit" id="button">
+        </form>
+      </div>
+      <!--End col-->
+
+      <!--Begin col-->
+      <div class="column">
+        <div class="videowrap">
+          <iframe
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11898.289517452584!2d-87.60853049433447!3d41.79442860243028!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e2912ce6f7027%3A0xc0cfb5545d4a37b2!2sHyde%20Park%2C%20Chicago%2C%20IL%2C%20USA!5e0!3m2!1sen!2spt!4v1662384760663!5m2!1sen!2spt"
+            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade"></iframe>
+        </div>
+      </div>
+      <!--End col-->
+    </div>
+    <!--End row-->
+  </article>
+</section>
+<!-- Handle dynamic slot selection based on selected date  -->
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  console.log('Script loaded');
+  
+  // Try both possible ID formats
+  let datePicker = document.getElementById('id_reservation_date') || document.getElementById('date-picker');
+  let slotSelect = document.getElementById('id_reservation_slot') || document.getElementById('slot-select');
+  
+  console.log('Date picker:', datePicker);
+  console.log('Slot select:', slotSelect);
+  
+  if (!datePicker || !slotSelect) {
+    console.error('Could not find form elements');
+    return;
+  }
+
+  // Set minimum date to today
+  const today = new Date().toISOString().split('T')[0];
+  datePicker.min = today;
+
+  function updateSlots() {
+    const selectedDate = datePicker.value;
+    console.log('Selected date:', selectedDate);
+    
+    if (!selectedDate) {
+      slotSelect.innerHTML = '<option value="">Select a date first</option>';
+      slotSelect.disabled = true;
+      return;
+    }
+
+    slotSelect.innerHTML = '<option value="">Loading available slots...</option>';
+    slotSelect.disabled = true;
+
+    console.log('Fetching slots for:', selectedDate);
+    
+    fetch(`/available-slots/?date=${selectedDate}`)
+      .then(response => {
+        console.log('Response status:', response.status);
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then(data => {
+        console.log('Received data:', data);
+        slotSelect.innerHTML = '';
+        
+        if (data.available_slots && data.available_slots.length > 0) {
+          // Add default option
+          const defaultOption = document.createElement('option');
+          defaultOption.value = '';
+          defaultOption.textContent = 'Select a time slot';
+          defaultOption.selected = true;
+          slotSelect.appendChild(defaultOption);
+          
+          // Add available slots
+          data.available_slots.forEach(slot => {
+            const option = document.createElement('option');
+            option.value = slot.value;
+            option.textContent = slot.display;
+            slotSelect.appendChild(option);
+          });
+          
+          slotSelect.disabled = false;
+          console.log('Slots updated successfully');
+        } else {
+          slotSelect.innerHTML = '<option value="">No available slots for this date</option>';
+          slotSelect.disabled = true;
+          console.log('No available slots');
+        }
+      })
+      .catch(error => {
+        console.error('Error fetching slots:', error);
+        slotSelect.innerHTML = '<option value="">Error loading slots. Please try again.</option>';
+        slotSelect.disabled = true;
+      });
+  }
+
+  // Update slots when date changes
+  datePicker.addEventListener('change', function() {
+    console.log('Date changed to:', this.value);
+    updateSlots();
+  });
+  
+  // Initial load if date is already selected
+  if (datePicker.value) {
+    console.log('Initial date present:', datePicker.value);
+    updateSlots();
+  }
+});
+</script>
+
+{% endblock %}
