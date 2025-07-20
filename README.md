@@ -15,6 +15,48 @@ A simple Django-based web application for Litle lemon table reservation. Users c
 
 ---
 
+## 🗄️ Database Setup: MySQL for Django
+
+To run this project with MySQL as the database backend, follow these steps to install MySQL, create the necessary database, and configure Django to connect to it.
+
+---
+
+### ✅ 1. Install MySQL
+
+#### On Windows:
+
+- Download MySQL Installer from [https://dev.mysql.com/downloads/installer/](https://dev.mysql.com/downloads/installer/)
+- Choose the **Developer Default** or **Custom** setup and install MySQL Server
+- During installation, set the **root password** and **create a user** (e.g., `web_dev`)
+
+#### On macOS (using Homebrew):
+
+```bash
+brew install mysql
+brew services start mysql
+```
+
+#### On Ubuntu/Linux:
+```bash
+sudo apt update
+sudo apt install mysql-server
+sudo systemctl start mysql
+```
+
+### ✅ 2. Create Database and User
+```sql
+mysql -u root -p
+```
+
+-- Then run the following SQL:
+```sql
+CREATE DATABASE reservations CHARACTER SET UTF8MB4;
+CREATE USER 'web_dev'@'localhost' IDENTIFIED BY 'web_dev@123';
+GRANT ALL PRIVILEGES ON reservations.* TO 'web_dev'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;
+```
+
 ## 🛠️ Installation & Setup Guide
 
 Follow the steps below to get the application running on your local machine.
