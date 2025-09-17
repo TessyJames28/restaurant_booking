@@ -5,39 +5,98 @@
 <section>
   <article>
     <h1>Booking Dashboard</h1>
-    <!--Begin row-->
+
+    <!-- Filter section -->
     <div class="row">
-      <!--Begin col-->
+      <div class="column">
+        <label for="filterDate">Filter by Date:</label>
+        <input type="date" id="filterDate">
+        <button onclick="filterBookings()">Apply</button>
+      </div>
+    </div>
+
+    <!-- Bookings list -->
+    <div class="row">
       <div class="column">
         <h2>Booked Slots</h2>
-        <pre id="bookings"></pre>
+        <table border="1" cellpadding="8" cellspacing="0" id="bookingsTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Date</th>
+              <th>Time</th>
+            </tr>
+          </thead>
+          <tbody id="bookingsBody">
+            <!-- Rows will be injected here -->
+          </tbody>
+        </table>
       </div>
-      <!--End col-->
 
-      <!--Begin col-->
       <div class="column">
         <div class="videowrap">
           <iframe
             src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d11898.289517452584!2d-87.60853049433447!3d41.79442860243028!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x880e2912ce6f7027%3A0xc0cfb5545d4a37b2!2sHyde%20Park%2C%20Chicago%2C%20IL%2C%20USA!5e0!3m2!1sen!2spt!4v1662384760663!5m2!1sen!2spt"
-            width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy"
-            referrerpolicy="no-referrer-when-downgrade"></iframe>
+            width="600" height="450" style="border:0;" allowfullscreen=""
+            loading="lazy"
+            referrerpolicy="no-referrer-when-downgrade">
+          </iframe>
         </div>
       </div>
-      <!--End col-->
     </div>
-    <!--End row-->
   </article>
 </section>
 
-<!-- Fetch booked slot and display on html page  -->
 <script>
-  fetch('/booking_data/')
-    .then(response => response.json())
-    .then(data => {
-      const display = document.getElementById('bookings');
-      display.innerText = JSON.stringify(data, null, 2);
-    })
-    .catch(error => console.error('Error fetching bookings:', error));
-</script>
+  let bookingsData = [];
 
+  // Fetch booked slot and display on HTML page
+  function fetchBookings() {
+    fetch('/booking_data/')
+      .then(response => response.json())
+      .then(data => {
+        bookingsData = data;  // Store globally for filtering
+        renderBookings(data);
+      })
+      .catch(error => console.error('Error fetching bookings:', error));
+  }
+
+  // Render bookings into table
+  function renderBookings(data) {
+    const tbody = document.getElementById('bookingsBody');
+    tbody.innerHTML = ""; // Clear table
+
+    if (data.length === 0) {
+      tbody.innerHTML = "<tr><td colspan='4'>No bookings found</td></tr>";
+      return;
+    }
+
+    data.forEach(item => {
+      const row = `
+        <tr>
+          <td>${item.id}</td>
+          <td>${item.name}</td>
+          <td>${item.date}</td>
+          <td>${item.time}</td>
+        </tr>
+      `;
+      tbody.insertAdjacentHTML('beforeend', row);
+    });
+  }
+
+  // Filter by date
+  function filterBookings() {
+    const selectedDate = document.getElementById('filterDate').value;
+    if (!selectedDate) {
+      renderBookings(bookingsData); // Show all if no filter
+      return;
+    }
+    const filtered = bookingsData.filter(b => b.date === selectedDate);
+    renderBookings(filtered);
+  }
+
+  // Load bookings on page load
+  document.addEventListener("DOMContentLoaded", fetchBookings);
+</script>
 {% endblock %}
