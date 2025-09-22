@@ -52,7 +52,7 @@ mysql -u root -p
 ```sql
 CREATE DATABASE reservations CHARACTER SET UTF8MB4;
 CREATE USER 'web_dev'@'localhost' IDENTIFIED BY 'web_dev@123';
-GRANT ALL PRIVILEGES ON reservations.* TO 'web_dev'@'localhost';
+GRANT ALL PRIVILEGES ON *.* TO 'web_dev'@'localhost';
 FLUSH PRIVILEGES;
 EXIT;
 ```
@@ -95,7 +95,17 @@ pip install -r requirements.txt
 ```bash
 python manage.py makemigrations
 python manage.py migrate
+```
+
+- If on Linux System Seed the table as:
+```bash
 python manage.py shell < seed_menu.py
+```
+
+- For Windows Seed the table as:
+```bash
+python manage.py shell
+exec(open('seed_menu.py').read())
 ```
 
 ### 🚦 Step 5: Run the Development Server
